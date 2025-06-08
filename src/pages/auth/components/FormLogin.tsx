@@ -5,6 +5,7 @@ import { LoginFormData } from '@/types/auth';
 import { AlertCircle, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import { useLoginMutation } from '../hooks/useLogin';
 
 type FormLoginProps = {
@@ -22,44 +23,23 @@ export const FormLogin = ({ onSuccess, onError }: FormLoginProps) => {
     formState: { errors },
   } = useForm<LoginFormData>();
 
+  const navigate = useNavigate();
   const loginMutation = useLoginMutation();
-
+  const rememberMe = localStorage.getItem('remember_me');
+  const savedEmail = localStorage.getItem('user_email');
   // Clear success state after 5 seconds
   useEffect(() => {
     if (loginMutation.isSuccess) {
       const timer = setTimeout(() => {
         loginMutation.reset();
+        navigate('/dashboard'); // Redirect to dashboard on success
       }, 5000);
       return () => clearTimeout(timer);
     }
   }, [loginMutation.isSuccess]);
 
-  // Load remembered email
-  useEffect(() => {
-    const rememberMe = localStorage.getItem('remember_me');
-    const savedEmail = localStorage.getItem('user_email');
-
-    if (rememberMe === 'true' && savedEmail) {
-      register('email').onChange({
-        target: { value: savedEmail, type: 'email' },
-      } as React.ChangeEvent<HTMLInputElement>);
-      register('rememberMe').onChange({
-        target: { checked: true, type: 'checkbox' },
-      } as React.ChangeEvent<HTMLInputElement>);
-    }
-  }, []);
-
   const onSubmit = async (data: LoginFormData) => {
     clearErrors();
-
-    // // Validate form
-    // const validationErrors = validateFormLogin(values);
-    // if (Object.keys(validationErrors).length > 0) {
-    //   Object.entries(validationErrors).forEach(([field, message]) => {
-    //     setError(field as keyof LoginFormData, { message });
-    //   });
-    //   return;
-    // }
 
     try {
       const userData = await loginMutation.mutateAsync(data);
@@ -94,6 +74,7 @@ export const FormLogin = ({ onSuccess, onError }: FormLoginProps) => {
             id="email"
             type="email"
             {...register('email', {
+              value: rememberMe === 'true' && savedEmail ? savedEmail : '',
               required: 'Email is required',
               pattern: {
                 value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -165,7 +146,9 @@ export const FormLogin = ({ onSuccess, onError }: FormLoginProps) => {
         <label className="flex items-center">
           <input
             type="checkbox"
-            {...register('rememberMe')}
+            {...register('rememberMe', {
+              value: rememberMe === 'true' ? true : false,
+            })}
             className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
           />
           <span className="ml-2 text-sm text-gray-600">Remember Me</span>
