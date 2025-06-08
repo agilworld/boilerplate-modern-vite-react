@@ -1,7 +1,7 @@
 import { AuthUserResponse } from '@/types/auth';
 // Auth API functions
 export const authApi = {
-  login: async (credentials: {
+  login: async (_: {
     email: string;
     password: string;
   }): Promise<AuthUserResponse> => {

@@ -33,7 +33,7 @@ export const FormLogin = ({ onSuccess, onError }: FormLoginProps) => {
       const timer = setTimeout(() => {
         loginMutation.reset();
         navigate('/dashboard'); // Redirect to dashboard on success
-      }, 5000);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [loginMutation.isSuccess]);
